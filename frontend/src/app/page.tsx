@@ -1,103 +1,55 @@
-import Image from "next/image";
-
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="min-h-screen flex flex-col bg-[#b2e0e5] text-[#0d1a59] font-sans">
+      {/* Navbar */}
+      <nav className="flex justify-between items-center px-10 py-4 bg-[#17285d] text-white">
+        <h1 className="text-3xl font-bold">Ringi</h1>
+        <ul className="flex space-x-8 text-sm font-medium">
+          <li className="hover:text-cyan-300 cursor-pointer">Home</li>
+          <li className="hover:text-cyan-300 cursor-pointer">Dial Pad</li>
+          <li className="hover:text-cyan-300 cursor-pointer">Call Logs</li>
+        </ul>
+      </nav>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+      {/* Hero Section */}
+      <section className="flex-1 flex items-center justify-center relative text-center px-4 py-20 bg-[#0d1a59] text-white overflow-hidden">
+        {/* Decorative Circle */}
+        <div className="absolute top-0 right-0 w-72 h-72 bg-[#2d00b3] rounded-full -translate-y-1/2 translate-x-1/4 z-0"></div>
+
+        <div className="relative z-10 max-w-xl mx-auto">
+          <h2 className="text-5xl font-bold mb-4 leading-tight">
+            VoIP for <br /> Kamailio
+          </h2>
+          <h3 className="text-lg font-semibold mb-2">
+            “Simplify Your Communication with Kamailio-Powered VoIP Platform”
+          </h3>
+          <p className="italic text-sm mb-6">
+            Real-time voice and video calls, right from your browser
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            <input
+              type="text"
+              placeholder="Enter your phone number..."
+              className="px-5 py-3 rounded-full w-64 text-black"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <button className="bg-[#00aaff] hover:bg-cyan-600 text-white px-6 py-3 rounded-full transition">
+              login
+            </button>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-[#17285d] text-white px-10 py-6 text-center">
+        <div className="flex justify-center space-x-6 mb-2 text-sm">
+          <span className="cursor-pointer hover:text-cyan-300">About</span>
+          <span className="cursor-pointer hover:text-cyan-300">Features</span>
+          <span className="cursor-pointer hover:text-cyan-300">Help</span>
+          <span className="cursor-pointer hover:text-cyan-300">Contact</span>
+        </div>
+        <p className="text-xs">© 2025 Ringi. All rights reserved</p>
       </footer>
-    </div>
+    </main>
   );
 }
