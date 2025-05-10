@@ -1,23 +1,30 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const loginRouter = require('./api/auth/login');
-const callRouter = require('./api/calls/startCall');
-const endCallRouter = require('./api/calls/endCall');
-const callLogRouter = require('./api/calls/callLog');
+require('dotenv').config();
+const http = require('http');
+const app = require('./app');
+const connectDB = require('./config/database');
+const logger = require('./utils/logger');
+const socketIO = require('./websocket');
 
-dotenv.config();
+// Connect to database
+connectDB();
 
-const app = express();
-const port = process.env.PORT || 5000;
+// Create HTTP server
+const server = http.createServer(app);
 
-app.use(express.json());
+// Initialize WebSocket server
+socketIO.init(server);
 
-// Routing
-app.use('/api/auth', loginRouter);
-app.use('/api/calls', callRouter);
-app.use('/api/calls/end', endCallRouter);
-app.use('/api/calls/log', callLogRouter);
+// Set port
+const PORT = process.env.PORT || 5000;
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Start server
+server.listen(PORT, () => {
+  logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  logger.error(`Error: ${err.message}`);
+  // Close server & exit process
+  server.close(() => process.exit(1));
 });
