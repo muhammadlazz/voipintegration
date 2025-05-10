@@ -1,6 +1,6 @@
 const { Web, UserAgent, SessionState } = require('sip.js');
 const logger = require('../utils/logger');
-const kamailioConfig = require('../config/kamailio');
+const { ErrorResponse } = require('../middleware/error');
 
 // Store active sessions
 const activeSessions = new Map();
@@ -13,14 +13,14 @@ const activeSessions = new Map();
 exports.createUserAgent = async (user) => {
   try {
     // Create URI for the user
-    const uri = Web.UserAgent.makeURI(`sip:${user.phoneNumber}@${kamailioConfig.auth.realm}`);
+    const uri = Web.UserAgent.makeURI(`sip:${user.phoneNumber}@${process.env.KAMAILIO_REALM}`);
     
     if (!uri) {
       throw new Error('Invalid SIP URI');
     }
     
     // Server configuration
-    const server = `${kamailioConfig.server.protocol.toLowerCase()}:${kamailioConfig.server.host}:${kamailioConfig.server.port}`;
+    const server = `udp:${process.env.KAMAILIO_HOST}:${process.env.KAMAILIO_PORT}`;
     
     // User agent configuration
     const options = {
@@ -29,10 +29,10 @@ exports.createUserAgent = async (user) => {
         server,
       },
       authorizationUsername: user.phoneNumber,
-      authorizationPassword: user.password,
+      authorizationPassword: user.password, // Make sure this is accessible
       displayName: user.name || user.phoneNumber,
       contactParams: { transport: 'udp' }, // Using UDP as required
-      userAgentString: kamailioConfig.sip.userAgentString,
+      userAgentString: 'VoIP-Web-Client/1.0.0',
     };
     
     // Create user agent
@@ -47,6 +47,44 @@ exports.createUserAgent = async (user) => {
   } catch (error) {
     logger.error(`Error creating SIP user agent: ${error.message}`);
     throw error;
+  }
+};
+
+/**
+ * Create a temporary user agent for health checks
+ * @returns {UserAgent|null} SIP user agent or null if failed
+ */
+exports.createTempUserAgent = async () => {
+  try {
+    // Create a temporary URI
+    const uri = Web.UserAgent.makeURI(`sip:healthcheck@${process.env.KAMAILIO_REALM}`);
+    
+    if (!uri) {
+      throw new Error('Invalid SIP URI');
+    }
+    
+    // Server configuration
+    const server = `udp:${process.env.KAMAILIO_HOST}:${process.env.KAMAILIO_PORT}`;
+    
+    // Basic user agent configuration
+    const options = {
+      uri,
+      transportOptions: {
+        server,
+      },
+      userAgentString: 'VoIP-Health-Check/1.0.0',
+    };
+    
+    // Create user agent
+    const userAgent = new Web.UserAgent(options);
+    
+    // Just try to start it to check connectivity
+    await userAgent.start();
+    
+    return userAgent;
+  } catch (error) {
+    logger.error(`Health check error: ${error.message}`);
+    return null;
   }
 };
 
@@ -84,7 +122,7 @@ exports.makeCall = async (userAgent, destination, callType) => {
     // Format destination as SIP URI if it's a phone number
     let targetUri = destination;
     if (!destination.startsWith('sip:')) {
-      targetUri = `sip:${destination}@${kamailioConfig.auth.realm}`;
+      targetUri = `sip:${destination}@${process.env.KAMAILIO_REALM}`;
     }
     
     // Create target URI
@@ -205,6 +243,46 @@ exports.endCall = async (callId) => {
  */
 exports.getSession = (callId) => {
   return activeSessions.get(callId) || null;
+};
+
+/**
+ * Set up hook for incoming calls
+ * @param {UserAgent} userAgent - SIP user agent
+ * @param {Function} onIncomingCall - Callback for incoming calls
+ */
+exports.setupIncomingCallHook = (userAgent, onIncomingCall) => {
+  if (!userAgent) {
+    logger.error('Cannot set up incoming call hook: User agent is null');
+    return;
+  }
+  
+  userAgent.delegate = {
+    onInvite: (invitation) => {
+      // Generate call ID
+      const callId = `incoming-${Date.now()}`;
+      
+      // Store session
+      activeSessions.set(callId, invitation);
+      
+      // Extract caller info
+      const caller = invitation.request.from.uri.user;
+      
+      // Determine call type from SDP
+      const sdp = invitation.request.body;
+      const hasVideo = sdp && sdp.includes('m=video');
+      const callType = hasVideo ? 'video call' : 'call';
+      
+      // Call the callback
+      onIncomingCall({
+        callId,
+        caller,
+        callType,
+        invitation
+      });
+    }
+  };
+  
+  logger.info('Incoming call hook set up successfully');
 };
 
 module.exports = exports;
