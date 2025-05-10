@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useCallSocket } from "@/hooks/useCallSocket";
+import { useCallSocket } from "hooks/useCallSocket";
 import { Button } from "@/components/ui/button";
 import { Phone, Video, Mic, MicOff, VideoOff } from "lucide-react";
 import { useRouter } from "next/navigation";

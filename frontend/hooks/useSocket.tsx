@@ -1,19 +1,19 @@
 "use client";
 
 import { useEffect, useState, useContext, createContext, ReactNode } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { useAuth } from '../hooks/useAuth';
+import socketIOClient from 'socket.io-client';
+import { useAuth } from './useAuth';  // Adjust the path to where your useAuth hook is located
+
+// Define a type for the socket to avoid TypeScript errors
+type SocketType = ReturnType<typeof socketIOClient> | null;
 
 interface SocketContextType {
-  socket: Socket | null;
+  socket: SocketType;
   connected: boolean;
 }
 
-// Create context
-const SocketContext = createContext<SocketContextType>({
-  socket: null,
-  connected: false
-});
+// Create context with null as default
+const SocketContext = createContext<SocketContextType | null>(null);
 
 interface SocketProviderProps {
   children: ReactNode;
@@ -21,7 +21,7 @@ interface SocketProviderProps {
 
 // Socket provider component
 export const SocketProvider = ({ children }: SocketProviderProps) => {
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<SocketType>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const { token, isAuthenticated } = useAuth();
   
@@ -39,7 +39,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     }
 
     // Initialize socket connection
-    const socketInstance = io(BACKEND_URL, {
+    const socketInstance = socketIOClient(BACKEND_URL, {
       auth: {
         token,
       },
@@ -56,7 +56,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       setConnected(false);
     });
 
-    socketInstance.on('connect_error', (error: { message: any; }) => {
+    socketInstance.on('connect_error', (error: any) => {
       console.error('Socket connection error:', error.message);
       setConnected(false);
     });
@@ -68,7 +68,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated, token, socket]);
 
   return (
     <SocketContext.Provider value={{ socket, connected }}>
@@ -80,7 +80,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 // Custom hook to use the socket
 export const useSocket = (): SocketContextType => {
   const context = useContext(SocketContext);
-  if (!context) {
+  if (context === null) {
     throw new Error('useSocket must be used within a SocketProvider');
   }
   return context;
